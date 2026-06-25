@@ -253,7 +253,7 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(
     ShowAttackVisual(
         pogoAttackVisual,
-        0.1f)); 
+        0.1f));
         bool hitEnemy = false;
 
         Collider2D[] hits =
@@ -434,6 +434,14 @@ public class PlayerController : MonoBehaviour
 
                     break;
             }
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.GetComponent<PlatformEffector2D>())// Si salimos de la zona de activación del collider con el componente Platform Effector 2D
+        {
+            other.isTrigger = false;// Deshabilitar la propiedad isTrigger
         }
     }
 }
