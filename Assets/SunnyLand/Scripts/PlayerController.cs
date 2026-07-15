@@ -287,9 +287,15 @@ public class PlayerController : MonoBehaviour
     // RECIBIR DAÑO
     //--------------------------------
     public void TakeDamage(
-        int damage,
-        Vector2 sourcePosition)
+    int damage,
+    Vector2 sourcePosition)
     {
+        Debug.Log("TakeDamage iniciado");
+
+        Debug.Log("HealthBar = " + healthBar);
+        Debug.Log("RespawnPoint = " + respawnPoint);
+        Debug.Log("RB = " + rb);
+
         if (!canBeHit)
             return;
 

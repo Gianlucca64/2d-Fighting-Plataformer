@@ -11,14 +11,15 @@ public class Enemy : MonoBehaviour
     [Header("Knockback")]
     public float knockbackForce = 5f;
     public float hitFlashTime = 0.1f;
-    int currentHealth;
 
-    Rigidbody2D rb;
+    protected int currentHealth;
+    protected Rigidbody2D rb;
 
-    void Start()
+    protected bool isKnockedBack = false;
+
+    protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-
         currentHealth = maxHealth;
     }
 
@@ -33,11 +34,13 @@ public class Enemy : MonoBehaviour
 
         rb.velocity = Vector2.zero;
 
+        isKnockedBack = true;
+
         rb.AddForce(
-            knockbackDirection *
-            knockbackForce,
+            knockbackDirection * knockbackForce,
             ForceMode2D.Impulse);
 
+        StartCoroutine(KnockbackRecovery());
         StartCoroutine(HitFlash());
 
         if (currentHealth <= 0)
@@ -46,14 +49,20 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    System.Collections.IEnumerator KnockbackRecovery()
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        isKnockedBack = false;
+    }
+
     //--------------------------------
     // DAÑO POR CONTACTO
     //--------------------------------
     void OnCollisionStay2D(Collision2D collision)
     {
         PlayerController player =
-            collision.gameObject
-            .GetComponent<PlayerController>();
+            collision.gameObject.GetComponent<PlayerController>();
 
         if (player != null)
         {
@@ -63,7 +72,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    //Parpadeo//
+    //--------------------------------
+    // PARPADEO
+    //--------------------------------
     System.Collections.IEnumerator HitFlash()
     {
         SpriteRenderer sr =
@@ -78,6 +89,7 @@ public class Enemy : MonoBehaviour
 
         sr.enabled = true;
     }
+
     //--------------------------------
     // MORIR
     //--------------------------------
