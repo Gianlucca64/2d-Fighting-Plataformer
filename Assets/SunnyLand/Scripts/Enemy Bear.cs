@@ -22,6 +22,9 @@ public class BearEnemy : Enemy
     public float attackCooldown = 1.2f;
     public int attackDamage = 1;
 
+    [Header("Visual Ataque")]
+    public GameObject attackVisual;
+
     bool movingRight = true;
     float attackTimer;
 
@@ -103,11 +106,15 @@ public class BearEnemy : Enemy
 
         if (direction > 0)
         {
+            movingRight = true;
+
             transform.localScale =
                 new Vector3(1, 1, 1);
         }
         else
         {
+            movingRight = false;
+
             transform.localScale =
                 new Vector3(-1, 1, 1);
         }
@@ -125,12 +132,22 @@ public class BearEnemy : Enemy
         {
             attackTimer = 0;
 
-            Debug.Log("Bear atacó");
+            StartCoroutine(
+                ShowAttackVisual());
 
             player.TakeDamage(
                 attackDamage,
                 transform.position);
         }
+    }
+
+    System.Collections.IEnumerator ShowAttackVisual()
+    {
+        attackVisual.SetActive(true);
+
+        yield return new WaitForSeconds(0.15f);
+
+        attackVisual.SetActive(false);
     }
 
     void Flip()
