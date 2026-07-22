@@ -14,14 +14,9 @@ public class WalkerEnemy : Enemy
 
     public LayerMask obstacleLayer;
 
-    bool movingRight = true;
+    protected bool movingRight = true;
 
-    void FixedUpdate()
-    {
-        Patrol();
-    }
-
-    void Patrol()
+    protected virtual void Patrol()
     {
         if (isKnockedBack)
             return;
@@ -49,7 +44,7 @@ public class WalkerEnemy : Enemy
         }
     }
 
-    void Flip()
+    protected void Flip()
     {
         movingRight = !movingRight;
 
@@ -60,24 +55,26 @@ public class WalkerEnemy : Enemy
         transform.localScale = scale;
     }
 
+    protected bool HasGroundAhead()
+    {
+        return Physics2D.Raycast(
+            edgeCheck.position,
+            Vector2.down,
+            edgeDistance);
+    }
+
     void OnDrawGizmos()
     {
         if (wallCheck != null)
         {
             Gizmos.color = Color.red;
-
-            Gizmos.DrawSphere(
-                wallCheck.position,
-                0.1f);
+            Gizmos.DrawSphere(wallCheck.position, 0.1f);
         }
 
         if (edgeCheck != null)
         {
             Gizmos.color = Color.blue;
-
-            Gizmos.DrawSphere(
-                edgeCheck.position,
-                0.1f);
+            Gizmos.DrawSphere(edgeCheck.position, 0.1f);
         }
     }
 }

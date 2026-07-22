@@ -317,12 +317,12 @@ MonoBehaviour:
   moveSpeed: 1.5
   wallCheck: {fileID: 3688924491823852874}
   edgeCheck: {fileID: 4909531182050132266}
-  detectRange: 5
   wallDistance: 0.2
   edgeDistance: 0.5
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 136
+  detectRange: 5
   attackRange: 1.5
   attackCooldown: 1.2
   attackDamage: 1

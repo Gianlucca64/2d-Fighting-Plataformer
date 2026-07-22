@@ -1,21 +1,10 @@
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
-public class BearEnemy : Enemy
+public class BearEnemy : WalkerEnemy
 {
-    [Header("Movimiento")]
-    public float moveSpeed = 1.5f;
-
-    [Header("Detección")]
-    public Transform wallCheck;
-    public Transform edgeCheck;
-
     [Header("Detección")]
     public float detectRange = 5f;
-
-    public float wallDistance = 0.2f;
-    public float edgeDistance = 0.5f;
-
-    public LayerMask obstacleLayer;
 
     [Header("Ataque")]
     public float attackRange = 1.5f;
@@ -25,17 +14,7 @@ public class BearEnemy : Enemy
     [Header("Visual Ataque")]
     public GameObject attackVisual;
 
-    bool movingRight = true;
     float attackTimer;
-
-    PlayerController player;
-
-    protected override void Start()
-    {
-        base.Start();
-
-        player = FindObjectOfType<PlayerController>();
-    }
 
     void FixedUpdate()
     {
@@ -61,38 +40,16 @@ public class BearEnemy : Enemy
         }
     }
 
-    void Patrol()
-    {
-        if (isKnockedBack)
-            return;
-
-        float direction = movingRight ? 1f : -1f;
-
-        rb.velocity = new Vector2(
-            direction * moveSpeed,
-            rb.velocity.y);
-
-        bool wallDetected = Physics2D.Raycast(
-            wallCheck.position,
-            Vector2.right * direction,
-            wallDistance,
-            obstacleLayer);
-
-        bool groundDetected = Physics2D.Raycast(
-            edgeCheck.position,
-            Vector2.down,
-            edgeDistance);
-
-        if (wallDetected || !groundDetected)
-        {
-            Flip();
-        }
-    }
-
     void ChasePlayer()
     {
         if (isKnockedBack)
             return;
+
+        if (!HasGroundAhead())
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
 
         float direction =
             player.transform.position.x >
@@ -107,18 +64,17 @@ public class BearEnemy : Enemy
         if (direction > 0)
         {
             movingRight = true;
-
             transform.localScale =
                 new Vector3(1, 1, 1);
         }
         else
         {
             movingRight = false;
-
             transform.localScale =
                 new Vector3(-1, 1, 1);
         }
     }
+
     void AttackBehaviour()
     {
         rb.velocity =
@@ -148,16 +104,5 @@ public class BearEnemy : Enemy
         yield return new WaitForSeconds(0.15f);
 
         attackVisual.SetActive(false);
-    }
-
-    void Flip()
-    {
-        movingRight = !movingRight;
-
-        Vector3 scale = transform.localScale;
-
-        scale.x *= -1;
-
-        transform.localScale = scale;
     }
 }

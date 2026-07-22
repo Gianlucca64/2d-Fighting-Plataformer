@@ -14,18 +14,19 @@ public class Enemy : MonoBehaviour
 
     protected int currentHealth;
     protected Rigidbody2D rb;
+    protected PlayerController player;
 
     protected bool isKnockedBack = false;
 
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        player = FindObjectOfType<PlayerController>();
+
         currentHealth = maxHealth;
     }
 
-    //--------------------------------
-    // RECIBIR DAÑO
-    //--------------------------------
     public void TakeDamage(
         int damage,
         Vector2 knockbackDirection)
@@ -56,9 +57,6 @@ public class Enemy : MonoBehaviour
         isKnockedBack = false;
     }
 
-    //--------------------------------
-    // DAÑO POR CONTACTO
-    //--------------------------------
     void OnCollisionStay2D(Collision2D collision)
     {
         PlayerController player =
@@ -72,9 +70,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    //--------------------------------
-    // PARPADEO
-    //--------------------------------
     System.Collections.IEnumerator HitFlash()
     {
         SpriteRenderer sr =
@@ -90,9 +85,6 @@ public class Enemy : MonoBehaviour
         sr.enabled = true;
     }
 
-    //--------------------------------
-    // MORIR
-    //--------------------------------
     void Die()
     {
         Destroy(gameObject);

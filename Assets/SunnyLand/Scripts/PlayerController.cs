@@ -273,6 +273,14 @@ public class PlayerController : MonoBehaviour
                     attackDamage,
                     Vector2.down);
             }
+
+            PogoObject pogo =
+                hit.GetComponent<PogoObject>();
+
+            if (pogo != null)
+            {
+                hitEnemy = true;
+            }
         }
 
         if (hitEnemy)
