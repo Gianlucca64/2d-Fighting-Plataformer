@@ -384,6 +384,14 @@ public class PlayerController : MonoBehaviour
             respawnPoint.position;
 
         rb.velocity = Vector2.zero;
+
+        MovingPlatform[] platforms =
+            FindObjectsOfType<MovingPlatform>();
+
+        foreach (MovingPlatform platform in platforms)
+        {
+            platform.ResetPlatform();
+        }
     }
 
     //--------------------------------
