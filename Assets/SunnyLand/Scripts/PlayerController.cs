@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
@@ -16,12 +17,12 @@ public class PlayerController : MonoBehaviour
     public Transform sideAttackPoint;
     public Transform upAttackPoint;
     public Transform pogoAttackPoint;
-    public GameObject sideAttackVisual;
-    public GameObject upAttackVisual;
-    public GameObject pogoAttackVisual;
 
     public float attackRadius = 0.5f;
     public int attackDamage = 1;
+
+    [Header("Animación de Ataque")]
+    public float attackDuration = 0.43f;
 
     [Header("Vida")]
     public int maxHealth = 5;
@@ -36,15 +37,19 @@ public class PlayerController : MonoBehaviour
 
     bool canBeHit = true;
     bool isKnockedBack = false;
+    public bool isPogoAttacking { get; private set; }
 
     [Header("Respawn")]
     public Transform respawnPoint;
     public float voidY = -20f;
 
     Rigidbody2D rb;
+    Animator anim;
 
     bool isGrounded;
     float moveInput;
+    bool canAttack = true;
+
     public enum AttackDirection
     {
         Side,
@@ -57,30 +62,26 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
 
         currentHealth = maxHealth;
 
-        healthBar.maxValue = maxHealth;
-        healthBar.value = currentHealth;
-        sideAttackVisual.SetActive(false);
-        upAttackVisual.SetActive(false);
-        pogoAttackVisual.SetActive(false);
-    }
-    System.Collections.IEnumerator ShowAttackVisual(
-    GameObject visual,
-    float duration)
-    {
-        visual.SetActive(true);
+        if (healthBar != null)
+        {
+            healthBar.maxValue = maxHealth;
+            healthBar.value = currentHealth;
+        }
 
-        yield return new WaitForSeconds(duration);
-
-        visual.SetActive(false);
+        if (anim == null)
+        {
+            Debug.LogError("El jugador no tiene Animator");
+        }
     }
 
     void Update()
     {
         //--------------------
-        // Movimiento
+        // Movimiento e Inputs
         //--------------------
         moveInput = 0;
 
@@ -90,22 +91,22 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.RightArrow))
             moveInput = 1;
 
-        //--------------------
         // Girar
-        //--------------------
         if (moveInput > 0)
             transform.localScale = new Vector3(1, 1, 1);
-
-        if (moveInput < 0)
+        else if (moveInput < 0)
             transform.localScale = new Vector3(-1, 1, 1);
 
-        //--------------------
         // Suelo
-        //--------------------
-        isGrounded = Physics2D.OverlapCircle(
-            groundCheck.position,
-            groundCheckRadius,
-            groundLayer);
+        if (groundCheck != null)
+        {
+            isGrounded = Physics2D.OverlapCircle(
+                groundCheck.position,
+                groundCheckRadius,
+                groundLayer);
+        }
+
+        // Dirección de Ataque
         if (Input.GetKey(KeyCode.UpArrow))
         {
             currentAttackDirection = AttackDirection.Up;
@@ -119,65 +120,52 @@ public class PlayerController : MonoBehaviour
             currentAttackDirection = AttackDirection.Side;
         }
 
-        //--------------------
         // Salto
-        //--------------------
         if (Input.GetKeyDown(KeyCode.Z) && isGrounded)
         {
-            rb.velocity =
-                new Vector2(rb.velocity.x, jumpForce);
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
 
         //--------------------
-        // Ataques
+        // Ejecución de Ataques
         //--------------------
         if (Input.GetKeyDown(KeyCode.X))
         {
-            if (Input.GetKey(KeyCode.UpArrow))
-            {
-                UpAttack();
-            }
-            else if (Input.GetKey(KeyCode.DownArrow) && !isGrounded)
-            {
-                PogoAttack();
-            }
-            else
-            {
-                SideAttack();
-            }
+            StartAttack(currentAttackDirection);
         }
 
-        //--------------------
         // Vacío
-        //--------------------
         if (transform.position.y < voidY)
         {
             Respawn();
         }
-        //---- visual del Ataque
-        if (currentAttackDirection == AttackDirection.Side)
+
+        //--------------------
+        // Debug Visual
+        //--------------------
+        if (currentAttackDirection == AttackDirection.Side && sideAttackPoint != null)
         {
-            Debug.DrawLine(
-                transform.position,
-                sideAttackPoint.position,
-                Color.yellow);
+            Debug.DrawLine(transform.position, sideAttackPoint.position, Color.yellow);
+        }
+        else if (currentAttackDirection == AttackDirection.Up && upAttackPoint != null)
+        {
+            Debug.DrawLine(transform.position, upAttackPoint.position, Color.yellow);
+        }
+        else if (currentAttackDirection == AttackDirection.Down && pogoAttackPoint != null)
+        {
+            Debug.DrawLine(transform.position, pogoAttackPoint.position, Color.yellow);
         }
 
-        if (currentAttackDirection == AttackDirection.Up)
+        //--------------------
+        // Actualización del Animator (Sigue ejecutándose siempre)
+        //--------------------
+        if (anim != null)
         {
-            Debug.DrawLine(
-                transform.position,
-                upAttackPoint.position,
-                Color.yellow);
+            anim.SetBool("Run", Mathf.Abs(rb.velocity.x) > 0.1f);
+            anim.SetBool("Grounded", isGrounded);
+            anim.SetFloat("Y", rb.velocity.y);
         }
-
-        if (currentAttackDirection == AttackDirection.Down)
-        {
-            Debug.DrawLine(
-                transform.position,
-                pogoAttackPoint.position,
-                Color.yellow);
-        }
+        Debug.Log(anim.GetCurrentAnimatorStateInfo(0).IsName("Zorro_SideAttack"));
     }
 
     void FixedUpdate()
@@ -185,25 +173,69 @@ public class PlayerController : MonoBehaviour
         if (isKnockedBack)
             return;
 
-        rb.velocity =
-            new Vector2(
-                moveInput * moveSpeed,
-                rb.velocity.y);
+        rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
     }
 
     //--------------------------------
     // ATAQUE LATERAL
     //--------------------------------
-    void SideAttack()
+    void StartAttack(AttackDirection direction)
     {
-        StartCoroutine(
-           ShowAttackVisual(
-               sideAttackVisual,
-                       0.1f));
-        Collider2D[] hits =
-            Physics2D.OverlapCircleAll(
-                sideAttackPoint.position,
-                attackRadius);
+        if (!canAttack)
+            return;
+
+        canAttack = false;
+
+        currentAttackDirection = direction;
+
+        if (direction == AttackDirection.Down)
+            isPogoAttacking = true;
+
+        anim.Play("Zorro_SideAttack");
+        StartCoroutine(AttackRoutine());
+    }
+
+
+    public void SideAttackHit()
+    {
+        switch (currentAttackDirection)
+        {
+            case AttackDirection.Side:
+                DealSideDamage();
+                break;
+
+            case AttackDirection.Up:
+                DealUpDamage();
+                break;
+
+            case AttackDirection.Down:
+                DealPogoDamage();
+                break;
+        }
+    }
+
+    IEnumerator AttackRoutine()
+    {
+        // Espera hasta que el Animator realmente entre en SideAttack
+        while (!anim.GetCurrentAnimatorStateInfo(0).IsName("Zorro_SideAttack"))
+            yield return null;
+
+        // Espera hasta que la animación termine completamente
+        while (anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
+            yield return null;
+
+        anim.SetBool("IsAttacking", false);
+
+        isPogoAttacking = false;
+
+        canAttack = true;
+    }
+    void DealSideDamage()
+    {
+        if (sideAttackPoint == null)
+            return;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(sideAttackPoint.position, attackRadius);
 
         foreach (Collider2D hit in hits)
         {
@@ -211,33 +243,25 @@ public class PlayerController : MonoBehaviour
 
             if (enemy != null)
             {
-                Vector2 dir =
-                    (hit.transform.position -
-                    transform.position).normalized;
-
+                Vector2 dir = (hit.transform.position - transform.position).normalized;
                 enemy.TakeDamage(attackDamage, dir);
             }
         }
     }
-
     //--------------------------------
     // ATAQUE ARRIBA
     //--------------------------------
-    void UpAttack()
+    void DealUpDamage()
     {
-        StartCoroutine(
-    ShowAttackVisual(
-        upAttackVisual,
-        0.1f));
-        Collider2D[] hits =
-            Physics2D.OverlapCircleAll(
-                upAttackPoint.position,
-                attackRadius);
+        
+
+        if (upAttackPoint == null) return;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(upAttackPoint.position, attackRadius);
 
         foreach (Collider2D hit in hits)
         {
             Enemy enemy = hit.GetComponent<Enemy>();
-
             if (enemy != null)
             {
                 enemy.TakeDamage(attackDamage, Vector2.up);
@@ -248,35 +272,25 @@ public class PlayerController : MonoBehaviour
     //--------------------------------
     // POGO
     //--------------------------------
-    void PogoAttack()
+    void DealPogoDamage()
     {
-        StartCoroutine(
-    ShowAttackVisual(
-        pogoAttackVisual,
-        0.1f));
-        bool hitEnemy = false;
+        
 
-        Collider2D[] hits =
-            Physics2D.OverlapCircleAll(
-                pogoAttackPoint.position,
-                attackRadius);
+        if (pogoAttackPoint == null) return;
+
+        bool hitEnemy = false;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(pogoAttackPoint.position, attackRadius);
 
         foreach (Collider2D hit in hits)
         {
             Enemy enemy = hit.GetComponent<Enemy>();
-
             if (enemy != null)
             {
                 hitEnemy = true;
-
-                enemy.TakeDamage(
-                    attackDamage,
-                    Vector2.down);
+                enemy.TakeDamage(attackDamage, Vector2.down);
             }
 
-            PogoObject pogo =
-                hit.GetComponent<PogoObject>();
-
+            PogoObject pogo = hit.GetComponent<PogoObject>();
             if (pogo != null)
             {
                 hitEnemy = true;
@@ -285,50 +299,36 @@ public class PlayerController : MonoBehaviour
 
         if (hitEnemy)
         {
-            rb.velocity = new Vector2(
-                rb.velocity.x,
-                jumpForce);
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
+    }
+
+    System.Collections.IEnumerator PogoWindow()
+    {
+        isPogoAttacking = true;
+        yield return new WaitForSeconds(0.2f);
+        isPogoAttacking = false;
     }
 
     //--------------------------------
     // RECIBIR DAÑO
     //--------------------------------
-    public void TakeDamage(
-    int damage,
-    Vector2 sourcePosition)
+    public void TakeDamage(int damage, Vector2 sourcePosition)
     {
-        Debug.Log("TakeDamage iniciado");
-
-        Debug.Log("HealthBar = " + healthBar);
-        Debug.Log("RespawnPoint = " + respawnPoint);
-        Debug.Log("RB = " + rb);
-
         if (!canBeHit)
             return;
 
         currentHealth -= damage;
 
-        healthBar.value = currentHealth;
+        if (healthBar != null)
+            healthBar.value = currentHealth;
 
-        Vector2 knockbackDir;
-
-        if (transform.position.x > sourcePosition.x)
-        {
-            knockbackDir = new Vector2(1f, 0.5f);
-        }
-        else
-        {
-            knockbackDir = new Vector2(-1f, 0.5f);
-        }
-
+        Vector2 knockbackDir = transform.position.x > sourcePosition.x ? new Vector2(1f, 0.5f) : new Vector2(-1f, 0.5f);
         knockbackDir.Normalize();
 
         rb.velocity = Vector2.zero;
         isKnockedBack = true;
-        rb.AddForce(
-            knockbackDir * knockbackForce,
-            ForceMode2D.Impulse);
+        rb.AddForce(knockbackDir * knockbackForce, ForceMode2D.Impulse);
 
         if (currentHealth <= 0)
         {
@@ -336,13 +336,13 @@ public class PlayerController : MonoBehaviour
         }
 
         StartCoroutine(IFrames());
-        System.Collections.IEnumerator KnockbackRecovery()
-        {
-            yield return new WaitForSeconds(0.2f);
-
-            isKnockedBack = false;
-        }
         StartCoroutine(KnockbackRecovery());
+    }
+
+    System.Collections.IEnumerator KnockbackRecovery()
+    {
+        yield return new WaitForSeconds(0.2f);
+        isKnockedBack = false;
     }
 
     //--------------------------------
@@ -351,23 +351,17 @@ public class PlayerController : MonoBehaviour
     System.Collections.IEnumerator IFrames()
     {
         canBeHit = false;
-
-        SpriteRenderer sr =
-            GetComponent<SpriteRenderer>();
-
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
         float timer = 0;
 
         while (timer < iFrameDuration)
         {
-            sr.enabled = !sr.enabled;
-
+            if (sr != null) sr.enabled = !sr.enabled;
             yield return new WaitForSeconds(0.1f);
-
             timer += 0.1f;
         }
 
-        sr.enabled = true;
-
+        if (sr != null) sr.enabled = true;
         canBeHit = true;
     }
 
@@ -378,16 +372,15 @@ public class PlayerController : MonoBehaviour
     {
         currentHealth = maxHealth;
 
-        healthBar.value = currentHealth;
+        if (healthBar != null)
+            healthBar.value = currentHealth;
 
-        transform.position =
-            respawnPoint.position;
+        if (respawnPoint != null)
+            transform.position = respawnPoint.position;
 
         rb.velocity = Vector2.zero;
 
-        MovingPlatform[] platforms =
-            FindObjectsOfType<MovingPlatform>();
-
+        MovingPlatform[] platforms = FindObjectsOfType<MovingPlatform>();
         foreach (MovingPlatform platform in platforms)
         {
             platform.ResetPlatform();
@@ -401,30 +394,13 @@ public class PlayerController : MonoBehaviour
     {
         Gizmos.color = Color.red;
 
-        if (sideAttackPoint != null)
-            Gizmos.DrawWireSphere(
-                sideAttackPoint.position,
-                attackRadius);
-
-        if (upAttackPoint != null)
-            Gizmos.DrawWireSphere(
-                upAttackPoint.position,
-                attackRadius);
-
-        if (pogoAttackPoint != null)
-            Gizmos.DrawWireSphere(
-                pogoAttackPoint.position,
-                attackRadius);
+        if (sideAttackPoint != null) Gizmos.DrawWireSphere(sideAttackPoint.position, attackRadius);
+        if (upAttackPoint != null) Gizmos.DrawWireSphere(upAttackPoint.position, attackRadius);
+        if (pogoAttackPoint != null) Gizmos.DrawWireSphere(pogoAttackPoint.position, attackRadius);
 
         Gizmos.color = Color.green;
 
-        if (groundCheck != null)
-            Gizmos.DrawWireSphere(
-                groundCheck.position,
-                groundCheckRadius);
-        //--------------------------------
-        // Dirección de ataque actual
-        //--------------------------------
+        if (groundCheck != null) Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
 
         if (Application.isPlaying)
         {
@@ -433,27 +409,13 @@ public class PlayerController : MonoBehaviour
             switch (currentAttackDirection)
             {
                 case AttackDirection.Side:
-
-                    Gizmos.DrawLine(
-                        transform.position,
-                        sideAttackPoint.position);
-
+                    if (sideAttackPoint != null) Gizmos.DrawLine(transform.position, sideAttackPoint.position);
                     break;
-
                 case AttackDirection.Up:
-
-                    Gizmos.DrawLine(
-                        transform.position,
-                        upAttackPoint.position);
-
+                    if (upAttackPoint != null) Gizmos.DrawLine(transform.position, upAttackPoint.position);
                     break;
-
                 case AttackDirection.Down:
-
-                    Gizmos.DrawLine(
-                        transform.position,
-                        pogoAttackPoint.position);
-
+                    if (pogoAttackPoint != null) Gizmos.DrawLine(transform.position, pogoAttackPoint.position);
                     break;
             }
         }
@@ -461,9 +423,9 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.GetComponent<PlatformEffector2D>())// Si salimos de la zona de activación del collider con el componente Platform Effector 2D
+        if (other.GetComponent<PlatformEffector2D>())
         {
-            other.isTrigger = false;// Deshabilitar la propiedad isTrigger
+            other.isTrigger = false;
         }
     }
 }
