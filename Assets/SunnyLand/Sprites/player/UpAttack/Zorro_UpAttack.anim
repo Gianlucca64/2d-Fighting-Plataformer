@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Zorro_SideAttack
+  m_Name: Zorro_UpAttack
   serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
@@ -21,17 +21,17 @@ AnimationClip:
   - serializedVersion: 2
     curve:
     - time: 0
-      value: {fileID: 21300000, guid: e6ee5f00f090d9c41951ca67039d3569, type: 3}
+      value: {fileID: 21300000, guid: d6c22d997574812439d583e9f3e8aa91, type: 3}
     - time: 0.083333336
-      value: {fileID: 21300000, guid: 09dd13f59da5a6341bcc34e91da98205, type: 3}
+      value: {fileID: 21300000, guid: 0626b7b1a2307e943b837c0cf7d0e03f, type: 3}
     - time: 0.16666667
-      value: {fileID: 21300000, guid: 56e68d4b86621c54d9e406a398521551, type: 3}
+      value: {fileID: 21300000, guid: 66413c9dbd459384baa1c88ba3611b04, type: 3}
     - time: 0.25
-      value: {fileID: 21300000, guid: f4c619f351671754bb0e1f5cd53de1b9, type: 3}
+      value: {fileID: 21300000, guid: 5a08a05f332114247a0a249676a9f809, type: 3}
     - time: 0.33333334
-      value: {fileID: 21300000, guid: 7b28ec1621de0614897e15781f322ae8, type: 3}
+      value: {fileID: 21300000, guid: 219ec4fa13414f94aae04ed305d67399, type: 3}
     - time: 0.41666666
-      value: {fileID: 21300000, guid: e6ee5f00f090d9c41951ca67039d3569, type: 3}
+      value: {fileID: 21300000, guid: d6c22d997574812439d583e9f3e8aa91, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
@@ -54,12 +54,12 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     pptrCurveMapping:
-    - {fileID: 21300000, guid: e6ee5f00f090d9c41951ca67039d3569, type: 3}
-    - {fileID: 21300000, guid: 09dd13f59da5a6341bcc34e91da98205, type: 3}
-    - {fileID: 21300000, guid: 56e68d4b86621c54d9e406a398521551, type: 3}
-    - {fileID: 21300000, guid: f4c619f351671754bb0e1f5cd53de1b9, type: 3}
-    - {fileID: 21300000, guid: 7b28ec1621de0614897e15781f322ae8, type: 3}
-    - {fileID: 21300000, guid: e6ee5f00f090d9c41951ca67039d3569, type: 3}
+    - {fileID: 21300000, guid: d6c22d997574812439d583e9f3e8aa91, type: 3}
+    - {fileID: 21300000, guid: 0626b7b1a2307e943b837c0cf7d0e03f, type: 3}
+    - {fileID: 21300000, guid: 66413c9dbd459384baa1c88ba3611b04, type: 3}
+    - {fileID: 21300000, guid: 5a08a05f332114247a0a249676a9f809, type: 3}
+    - {fileID: 21300000, guid: 219ec4fa13414f94aae04ed305d67399, type: 3}
+    - {fileID: 21300000, guid: d6c22d997574812439d583e9f3e8aa91, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
@@ -70,7 +70,7 @@ AnimationClip:
     m_Level: 0
     m_CycleOffset: 0
     m_HasAdditiveReferencePose: 0
-    m_LoopTime: 0
+    m_LoopTime: 1
     m_LoopBlend: 0
     m_LoopBlendOrientation: 0
     m_LoopBlendPositionY: 0
@@ -85,15 +85,8 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 0.16666667
-    functionName: SideAttackHit
-    data: 
-    objectReferenceParameter: {fileID: 0}
-    floatParameter: 0
-    intParameter: 0
-    messageOptions: 0
   - time: 0.25
-    functionName: SideAttackHit
+    functionName: UpAttackHit
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

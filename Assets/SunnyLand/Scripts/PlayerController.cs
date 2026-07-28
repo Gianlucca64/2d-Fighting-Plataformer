@@ -177,7 +177,7 @@ public class PlayerController : MonoBehaviour
     }
 
     //--------------------------------
-    // ATAQUE LATERAL
+    // ATAQUES
     //--------------------------------
     void StartAttack(AttackDirection direction)
     {
@@ -190,37 +190,49 @@ public class PlayerController : MonoBehaviour
 
         if (direction == AttackDirection.Down)
             isPogoAttacking = true;
-
-        anim.Play("Zorro_SideAttack");
-        StartCoroutine(AttackRoutine());
-    }
-
-
-    public void SideAttackHit()
-    {
-        switch (currentAttackDirection)
+        switch (direction)
         {
             case AttackDirection.Side:
-                DealSideDamage();
+                anim.SetTrigger("SideAttack");
                 break;
 
             case AttackDirection.Up:
-                DealUpDamage();
+                anim.SetTrigger("UpAttack");
                 break;
 
             case AttackDirection.Down:
-                DealPogoDamage();
+                anim.SetTrigger("PogoAttack");
                 break;
         }
+        StartCoroutine(AttackRoutine(direction));
     }
 
-    IEnumerator AttackRoutine()
+
+
+    IEnumerator AttackRoutine(AttackDirection direction)
     {
-        // Espera hasta que el Animator realmente entre en SideAttack
-        while (!anim.GetCurrentAnimatorStateInfo(0).IsName("Zorro_SideAttack"))
+        string stateName = "";
+
+        switch (direction)
+        {
+            case AttackDirection.Side:
+                stateName = "Zorro_SideAttack";
+                break;
+
+            case AttackDirection.Up:
+                stateName = "Zorro_UpAttack";
+                break;
+
+            case AttackDirection.Down:
+                stateName = "Zorro_PogoAttack";
+                break;
+        }
+
+        // Espera hasta entrar en la animación correcta
+        while (!anim.GetCurrentAnimatorStateInfo(0).IsName(stateName))
             yield return null;
 
-        // Espera hasta que la animación termine completamente
+        // Espera hasta que termine
         while (anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
             yield return null;
 
@@ -247,6 +259,24 @@ public class PlayerController : MonoBehaviour
                 enemy.TakeDamage(attackDamage, dir);
             }
         }
+    }
+
+    //--------------------------------
+    // ATAQUE LATERAL
+    //--------------------------------
+    public void SideAttackHit()
+    {
+        DealSideDamage();
+    }
+
+    public void UpAttackHit()
+    {
+        DealUpDamage();
+    }
+
+    public void PogoAttackHit()
+    {
+        DealPogoDamage();
     }
     //--------------------------------
     // ATAQUE ARRIBA

@@ -333,6 +333,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 184055726212088756, guid: 3772accfc1a056149b84f9874620f27d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 198979942953154616, guid: 3772accfc1a056149b84f9874620f27d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 3.7417998
+      objectReference: {fileID: 0}
+    - target: {fileID: 198979942953154616, guid: 3772accfc1a056149b84f9874620f27d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.44
+      objectReference: {fileID: 0}
     - target: {fileID: 3568050536722464955, guid: 3772accfc1a056149b84f9874620f27d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.29
@@ -377,6 +389,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 7106197819214779520, guid: 3772accfc1a056149b84f9874620f27d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.86
+      objectReference: {fileID: 0}
     - target: {fileID: 8562295055250125439, guid: 3772accfc1a056149b84f9874620f27d, type: 3}
       propertyPath: voidY
       value: -10
@@ -389,6 +405,14 @@ PrefabInstance:
       propertyPath: respawnPoint
       value: 
       objectReference: {fileID: 1300620222}
+    - target: {fileID: 8683468485247069901, guid: 3772accfc1a056149b84f9874620f27d, type: 3}
+      propertyPath: m_Size.x
+      value: 2.0625
+      objectReference: {fileID: 0}
+    - target: {fileID: 8683468485247069901, guid: 3772accfc1a056149b84f9874620f27d, type: 3}
+      propertyPath: m_Size.y
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 8415423908549970946, guid: 3772accfc1a056149b84f9874620f27d, type: 3}
