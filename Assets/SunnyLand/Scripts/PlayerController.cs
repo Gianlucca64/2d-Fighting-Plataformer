@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-
+using System.Collections.Generic;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movimiento")]
@@ -49,7 +49,7 @@ public class PlayerController : MonoBehaviour
     bool isGrounded;
     float moveInput;
     bool canAttack = true;
-
+    HashSet<Enemy> hitEnemies = new HashSet<Enemy>();
     public enum AttackDirection
     {
         Side,
@@ -186,6 +186,8 @@ public class PlayerController : MonoBehaviour
 
         canAttack = false;
 
+        hitEnemies.Clear();
+
         currentAttackDirection = direction;
 
         if (direction == AttackDirection.Down)
@@ -242,28 +244,7 @@ public class PlayerController : MonoBehaviour
 
         canAttack = true;
     }
-    void DealSideDamage()
-    {
-        if (sideAttackPoint == null)
-            return;
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(sideAttackPoint.position, attackRadius);
-
-        foreach (Collider2D hit in hits)
-        {
-            Enemy enemy = hit.GetComponent<Enemy>();
-
-            if (enemy != null)
-            {
-                Vector2 dir = (hit.transform.position - transform.position).normalized;
-                enemy.TakeDamage(attackDamage, dir);
-            }
-        }
-    }
-
-    //--------------------------------
-    // ATAQUE LATERAL
-    //--------------------------------
     public void SideAttackHit()
     {
         DealSideDamage();
@@ -277,6 +258,31 @@ public class PlayerController : MonoBehaviour
     public void PogoAttackHit()
     {
         DealPogoDamage();
+    }
+
+    //--------------------------------
+    // ATAQUE LATERAL
+    //--------------------------------
+
+    void DealSideDamage()
+    {
+        if (sideAttackPoint == null)
+            return;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(sideAttackPoint.position, attackRadius);
+
+        foreach (Collider2D hit in hits)
+        {
+            Enemy enemy = hit.GetComponent<Enemy>();
+
+            if (enemy != null && !hitEnemies.Contains(enemy))
+            {
+                hitEnemies.Add(enemy);
+
+                Vector2 dir = (hit.transform.position - transform.position).normalized;
+                enemy.TakeDamage(attackDamage, dir);
+            }
+        }
     }
     //--------------------------------
     // ATAQUE ARRIBA
@@ -292,8 +298,10 @@ public class PlayerController : MonoBehaviour
         foreach (Collider2D hit in hits)
         {
             Enemy enemy = hit.GetComponent<Enemy>();
-            if (enemy != null)
+
+            if (enemy != null && !hitEnemies.Contains(enemy))
             {
+                hitEnemies.Add(enemy);
                 enemy.TakeDamage(attackDamage, Vector2.up);
             }
         }
@@ -314,8 +322,11 @@ public class PlayerController : MonoBehaviour
         foreach (Collider2D hit in hits)
         {
             Enemy enemy = hit.GetComponent<Enemy>();
-            if (enemy != null)
+
+            if (enemy != null && !hitEnemies.Contains(enemy))
             {
+                hitEnemies.Add(enemy);
+
                 hitEnemy = true;
                 enemy.TakeDamage(attackDamage, Vector2.down);
             }
@@ -414,6 +425,13 @@ public class PlayerController : MonoBehaviour
         foreach (MovingPlatform platform in platforms)
         {
             platform.ResetPlatform();
+        }
+
+        Enemy[] enemies = FindObjectsOfType<Enemy>();
+
+        foreach (Enemy enemy in enemies)
+        {
+            enemy.ResetEnemy();
         }
     }
 

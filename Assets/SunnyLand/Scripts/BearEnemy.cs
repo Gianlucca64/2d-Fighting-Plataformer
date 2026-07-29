@@ -12,10 +12,15 @@ public class BearEnemy : WalkerEnemy
     public int attackDamage = 1;
 
     [Header("Visual Ataque")]
-    public GameObject attackVisual;
-
+    Animator anim;
     float attackTimer;
 
+    protected override void Start()
+    {
+        base.Start();
+
+        anim = GetComponent<Animator>();
+    }
     void FixedUpdate()
     {
         if (player == null)
@@ -40,6 +45,13 @@ public class BearEnemy : WalkerEnemy
         }
     }
 
+    protected override void Patrol()
+    {
+        anim.SetBool("Run", true);
+
+        base.Patrol();
+    }
+
     void ChasePlayer()
     {
         if (isKnockedBack)
@@ -57,6 +69,8 @@ public class BearEnemy : WalkerEnemy
             ? 1f
             : -1f;
 
+        anim.SetBool("Run", true);
+
         rb.velocity = new Vector2(
             direction * moveSpeed,
             rb.velocity.y);
@@ -65,18 +79,20 @@ public class BearEnemy : WalkerEnemy
         {
             movingRight = true;
             transform.localScale =
-                new Vector3(1, 1, 1);
+                new Vector3(-1, 1, 1);
         }
         else
         {
             movingRight = false;
             transform.localScale =
-                new Vector3(-1, 1, 1);
+                new Vector3(1, 1, 1);
         }
     }
 
     void AttackBehaviour()
     {
+        anim.SetBool("Run", false);
+
         rb.velocity =
             new Vector2(
                 0,
@@ -88,21 +104,23 @@ public class BearEnemy : WalkerEnemy
         {
             attackTimer = 0;
 
-            StartCoroutine(
-                ShowAttackVisual());
+            anim.SetTrigger("Attack");
+        }
+    }
+    public void DealDamage()
+    {
+        if (player == null)
+            return;
 
+        float distance = Vector2.Distance(
+            transform.position,
+            player.transform.position);
+
+        if (distance <= attackRange)
+        {
             player.TakeDamage(
                 attackDamage,
                 transform.position);
         }
-    }
-
-    System.Collections.IEnumerator ShowAttackVisual()
-    {
-        attackVisual.SetActive(true);
-
-        yield return new WaitForSeconds(0.15f);
-
-        attackVisual.SetActive(false);
     }
 }

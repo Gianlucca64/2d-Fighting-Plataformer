@@ -21,6 +21,15 @@ public class FlyingEnemy : Enemy
             (target -
             (Vector2)transform.position).normalized;
 
+        if (dir.x > 0.05f)
+        {
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+        else if (dir.x < -0.05f)
+        {
+            transform.localScale = new Vector3(-1, 1, 1);
+        }
+
         rb.velocity = dir * flySpeed;
     }
 
