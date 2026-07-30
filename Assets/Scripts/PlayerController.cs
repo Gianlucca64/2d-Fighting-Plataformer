@@ -39,13 +39,15 @@ public class PlayerController : MonoBehaviour
     bool isKnockedBack = false;
     public bool isPogoAttacking { get; private set; }
 
+    bool hasDiamond = false;
+
     [Header("Respawn")]
     public Transform respawnPoint;
     public float voidY = -20f;
 
     Rigidbody2D rb;
     Animator anim;
-
+    Enemy[] allEnemies;
     bool isGrounded;
     float moveInput;
     bool canAttack = true;
@@ -63,7 +65,7 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-
+        hasDiamond = false;
         currentHealth = maxHealth;
 
         if (healthBar != null)
@@ -76,6 +78,7 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogError("El jugador no tiene Animator");
         }
+        allEnemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
     }
 
     void Update()
@@ -165,7 +168,6 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("Grounded", isGrounded);
             anim.SetFloat("Y", rb.velocity.y);
         }
-        Debug.Log(anim.GetCurrentAnimatorStateInfo(0).IsName("Zorro_SideAttack"));
     }
 
     void FixedUpdate()
@@ -427,12 +429,7 @@ public class PlayerController : MonoBehaviour
             platform.ResetPlatform();
         }
 
-        Enemy[] enemies = FindObjectsOfType<Enemy>();
-
-        foreach (Enemy enemy in enemies)
-        {
-            enemy.ResetEnemy();
-        }
+        
     }
 
     //--------------------------------
@@ -469,11 +466,24 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void CollectDiamond()
+    {
+        hasDiamond = true;
+    }
+    public bool HasDiamond()
+    {
+        return hasDiamond;
+    }
     private void OnTriggerExit2D(Collider2D other)
     {
         if (other.GetComponent<PlatformEffector2D>())
         {
             other.isTrigger = false;
         }
+    }
+    public void FinishLevel()
+    {
+        rb.velocity = Vector2.zero;
+        enabled = false;
     }
 }

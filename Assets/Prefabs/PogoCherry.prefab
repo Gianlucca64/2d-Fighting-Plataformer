@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 5713010614436811673}
   - component: {fileID: 7322109269121546276}
   m_Layer: 9
-  m_Name: PogoObject
+  m_Name: PogoCherry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29,7 +29,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3746094471467415730}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 87.513466, y: -0.6899996, z: 0}
   m_LocalScale: {x: 8.1012, y: 8.1012, z: 8.1012}
   m_ConstrainProportionsScale: 1

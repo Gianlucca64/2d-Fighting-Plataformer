@@ -85,10 +85,6 @@ public class Enemy : MonoBehaviour
         sr.enabled = true;
     }
 
-    public void ResetEnemy()
-    {
-        currentHealth = maxHealth;
-    }
     void Die()
     {
         Destroy(gameObject);

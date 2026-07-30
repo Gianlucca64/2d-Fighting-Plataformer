@@ -21,7 +21,6 @@ public class Spike : PogoObject
     }
     void OnCollisionStay2D(Collision2D collision)
     {
-        Debug.Log("SPIKE STAY");
 
         PlayerController player =
             collision.gameObject.GetComponent<PlayerController>();
@@ -29,7 +28,6 @@ public class Spike : PogoObject
         if (player == null)
             return;
 
-        Debug.Log("Pogo: " + player.isPogoAttacking);
 
         if (player.isPogoAttacking)
             return;
