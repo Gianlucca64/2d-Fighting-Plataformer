@@ -35,6 +35,11 @@ public class PlayerController : MonoBehaviour
     public float knockbackForce = 8f;
     public float iFrameDuration = 1f;
 
+    [Header("Retroceso al atacar")]
+    public float attackRecoil = 1.5f;
+    public float attackRecoilTime = 0.08f;
+
+    bool attackRecoilActive = false;
     bool canBeHit = true;
     bool isKnockedBack = false;
     public bool isPogoAttacking { get; private set; }
@@ -52,6 +57,7 @@ public class PlayerController : MonoBehaviour
     float moveInput;
     bool canAttack = true;
     HashSet<Enemy> hitEnemies = new HashSet<Enemy>();
+    bool bossHitThisAttack = false;
     public enum AttackDirection
     {
         Side,
@@ -175,7 +181,12 @@ public class PlayerController : MonoBehaviour
         if (isKnockedBack)
             return;
 
-        rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
+        if (attackRecoilActive)
+            return;
+
+        rb.velocity = new Vector2(
+            moveInput * moveSpeed,
+            rb.velocity.y);
     }
 
     //--------------------------------
@@ -189,11 +200,13 @@ public class PlayerController : MonoBehaviour
         canAttack = false;
 
         hitEnemies.Clear();
+        bossHitThisAttack = false;
 
         currentAttackDirection = direction;
 
         if (direction == AttackDirection.Down)
             isPogoAttacking = true;
+
         switch (direction)
         {
             case AttackDirection.Side:
@@ -208,63 +221,44 @@ public class PlayerController : MonoBehaviour
                 anim.SetTrigger("PogoAttack");
                 break;
         }
-        StartCoroutine(AttackRoutine(direction));
+
+        StartCoroutine(AttackCooldown());
     }
 
 
-
-    IEnumerator AttackRoutine(AttackDirection direction)
+    IEnumerator AttackCooldown()
     {
-        string stateName = "";
-
-        switch (direction)
-        {
-            case AttackDirection.Side:
-                stateName = "Zorro_SideAttack";
-                break;
-
-            case AttackDirection.Up:
-                stateName = "Zorro_UpAttack";
-                break;
-
-            case AttackDirection.Down:
-                stateName = "Zorro_PogoAttack";
-                break;
-        }
-
-        // Espera hasta entrar en la animación correcta
-        while (!anim.GetCurrentAnimatorStateInfo(0).IsName(stateName))
-            yield return null;
-
-        // Espera hasta que termine
-        while (anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
-            yield return null;
-
-        anim.SetBool("IsAttacking", false);
-
-        isPogoAttacking = false;
+        yield return new WaitForSeconds(0.25f);
 
         canAttack = true;
+    }
+    IEnumerator AttackRecoil(float direction)
+    {
+        attackRecoilActive = true;
+
+        rb.velocity = new Vector2(
+            direction * attackRecoil,
+            rb.velocity.y
+        );
+
+        yield return new WaitForSeconds(attackRecoilTime);
+
+        attackRecoilActive = false;
     }
 
     public void SideAttackHit()
     {
         DealSideDamage();
     }
-
     public void UpAttackHit()
     {
         DealUpDamage();
     }
-
     public void PogoAttackHit()
     {
         DealPogoDamage();
     }
 
-    //--------------------------------
-    // ATAQUE LATERAL
-    //--------------------------------
 
     void DealSideDamage()
     {
@@ -283,12 +277,22 @@ public class PlayerController : MonoBehaviour
 
                 Vector2 dir = (hit.transform.position - transform.position).normalized;
                 enemy.TakeDamage(attackDamage, dir);
+
+                StartCoroutine(
+                    AttackRecoil(-dir.x)
+                );
+            }
+            SpiderBoss boss = hit.GetComponentInParent<SpiderBoss>();
+
+            if (boss != null && !bossHitThisAttack)
+            {
+                bossHitThisAttack = true;
+                boss.TryTakeDamage(attackDamage);
             }
         }
     }
-    //--------------------------------
-    // ATAQUE ARRIBA
-    //--------------------------------
+   
+   
     void DealUpDamage()
     {
         
@@ -306,12 +310,16 @@ public class PlayerController : MonoBehaviour
                 hitEnemies.Add(enemy);
                 enemy.TakeDamage(attackDamage, Vector2.up);
             }
+            SpiderBoss boss = hit.GetComponentInParent<SpiderBoss>();
+
+            if (boss != null)
+            {
+                boss.TryTakeDamage(attackDamage);
+            }
         }
     }
 
-    //--------------------------------
-    // POGO
-    //--------------------------------
+    
     void DealPogoDamage()
     {
         
@@ -331,6 +339,15 @@ public class PlayerController : MonoBehaviour
 
                 hitEnemy = true;
                 enemy.TakeDamage(attackDamage, Vector2.down);
+            }
+
+            SpiderWeakPoint weakPoint =
+                hit.GetComponent<SpiderWeakPoint>();
+
+            if (weakPoint != null)
+            {
+                weakPoint.HitByPogo();
+                hitEnemy = true;
             }
 
             PogoObject pogo = hit.GetComponent<PogoObject>();
@@ -389,6 +406,17 @@ public class PlayerController : MonoBehaviour
     }
 
     //--------------------------------
+    // FULL VIDA AL TOCAR UN CHECKPOINT
+    //--------------------------------
+    public void RestoreHealth()
+    {
+        currentHealth = maxHealth;
+
+        if (healthBar != null)
+            healthBar.value = currentHealth;
+    }
+
+    //--------------------------------
     // I-FRAMES
     //--------------------------------
     System.Collections.IEnumerator IFrames()
@@ -423,13 +451,21 @@ public class PlayerController : MonoBehaviour
 
         rb.velocity = Vector2.zero;
 
-        MovingPlatform[] platforms = FindObjectsOfType<MovingPlatform>();
+        MovingPlatform[] platforms =
+            FindObjectsOfType<MovingPlatform>();
+
         foreach (MovingPlatform platform in platforms)
         {
             platform.ResetPlatform();
         }
 
-        
+        foreach (Enemy enemy in allEnemies)
+        {
+            if (enemy != null)
+            {
+                enemy.ResetEnemy();
+            }
+        }
     }
 
     //--------------------------------

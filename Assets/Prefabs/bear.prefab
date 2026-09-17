@@ -228,7 +228,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 5
   contactDamage: 1
-  knockbackForce: 5
+  knockbackForce: 2
   hitFlashTime: 0.1
   moveSpeed: 1.5
   wallCheck: {fileID: 3688924491823852874}
@@ -239,7 +239,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 136
   detectRange: 5
-  attackRange: 1.5
+  attackRange: 2.2
   attackCooldown: 1.2
   attackDamage: 1
 --- !u!95 &8667115287042205928

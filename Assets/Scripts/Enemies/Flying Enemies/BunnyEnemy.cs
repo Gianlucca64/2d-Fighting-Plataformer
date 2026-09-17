@@ -6,6 +6,7 @@ public class BunnyEnemy : FlyingEnemy
     {
         Patrol,
         Chase,
+        WindUp,
         Dash,
         Return,
         Cooldown
@@ -21,6 +22,10 @@ public class BunnyEnemy : FlyingEnemy
     public float dashSpeed = 10f;
     public float dashDuration = 0.5f;
 
+    [Header("Preparación")]
+    public float windUpTime = 0.25f;
+    public float windUpSpeed = 2f;
+
     [Header("Cooldown")]
     public float cooldownTime = 1f;
 
@@ -34,14 +39,11 @@ public class BunnyEnemy : FlyingEnemy
     Vector2 dashDirection;
 
     float stateTimer;
-
-    Vector2 startPosition;
+    float windUpTimer;
 
     protected override void Start()
     {
         base.Start();
-
-        startPosition = transform.position;
 
         currentState = BunnyState.Patrol;
     }
@@ -61,6 +63,10 @@ public class BunnyEnemy : FlyingEnemy
                 ChasePlayer();
                 break;
 
+            case BunnyState.WindUp:
+                WindUp();
+                break;
+
             case BunnyState.Dash:
                 Dash();
                 break;
@@ -75,9 +81,9 @@ public class BunnyEnemy : FlyingEnemy
         }
     }
 
-    //--------------------------------
+    // --------------------------------
     // PATRULLA
-    //--------------------------------
+    // --------------------------------
 
     void Patrol()
     {
@@ -101,9 +107,9 @@ public class BunnyEnemy : FlyingEnemy
         }
     }
 
-    //--------------------------------
+    // --------------------------------
     // PERSEGUIR
-    //--------------------------------
+    // --------------------------------
 
     void ChasePlayer()
     {
@@ -123,6 +129,27 @@ public class BunnyEnemy : FlyingEnemy
                 (player.transform.position -
                 transform.position).normalized;
 
+            windUpTimer = windUpTime;
+
+            currentState =
+                BunnyState.WindUp;
+        }
+    }
+
+    // --------------------------------
+    // PREPARAR EMBESTIDA
+    // --------------------------------
+
+    void WindUp()
+    {
+        // Se aleja un poco del jugador
+        rb.velocity =
+            -dashDirection * windUpSpeed;
+
+        windUpTimer -= Time.fixedDeltaTime;
+
+        if (windUpTimer <= 0)
+        {
             stateTimer = dashDuration;
 
             currentState =
@@ -130,9 +157,9 @@ public class BunnyEnemy : FlyingEnemy
         }
     }
 
-    //--------------------------------
+    // --------------------------------
     // EMBESTIDA
-    //--------------------------------
+    // --------------------------------
 
     void Dash()
     {
@@ -140,7 +167,8 @@ public class BunnyEnemy : FlyingEnemy
             dashDirection *
             dashSpeed;
 
-        stateTimer -= Time.fixedDeltaTime;
+        stateTimer -=
+            Time.fixedDeltaTime;
 
         if (stateTimer <= 0)
         {
@@ -151,9 +179,9 @@ public class BunnyEnemy : FlyingEnemy
         }
     }
 
-    //--------------------------------
+    // --------------------------------
     // VOLVER
-    //--------------------------------
+    // --------------------------------
 
     void ReturnToStart()
     {
@@ -176,10 +204,26 @@ public class BunnyEnemy : FlyingEnemy
                 BunnyState.Cooldown;
         }
     }
+    // --------------------------------
+    // RESETEO DE CHASE
+    // --------------------------------
+    protected override void OnEnemyReset()
+    {
+        base.OnEnemyReset();
 
-    //--------------------------------
+        currentState = BunnyState.Patrol;
+
+        dashDirection = Vector2.zero;
+
+        stateTimer = 0f;
+        windUpTimer = 0f;
+
+        StopFlying();
+    }
+
+    // --------------------------------
     // DESCANSO
-    //--------------------------------
+    // --------------------------------
 
     void Cooldown()
     {

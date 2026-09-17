@@ -18,6 +18,9 @@ public class Enemy : MonoBehaviour
 
     protected bool isKnockedBack = false;
 
+    protected Vector3 startPosition;
+    protected Quaternion startRotation;
+
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -25,6 +28,9 @@ public class Enemy : MonoBehaviour
         player = FindObjectOfType<PlayerController>();
 
         currentHealth = maxHealth;
+
+        startPosition = transform.position;
+        startRotation = transform.rotation;
     }
 
     public void TakeDamage(
@@ -85,8 +91,32 @@ public class Enemy : MonoBehaviour
         sr.enabled = true;
     }
 
+    public void ResetEnemy()
+    {
+        gameObject.SetActive(true);
+
+        currentHealth = maxHealth;
+
+        transform.position = startPosition;
+        transform.rotation = startRotation;
+
+        rb.velocity = Vector2.zero;
+
+        isKnockedBack = false;
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+
+        if (sr != null)
+            sr.enabled = true;
+
+        OnEnemyReset();
+    }
+
+    protected virtual void OnEnemyReset()
+    {
+    }
     void Die()
     {
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }
